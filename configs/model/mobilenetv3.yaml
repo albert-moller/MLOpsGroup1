@@ -1,0 +1,6 @@
+model_name: mobilenetv3_large_100
+num_classes: 38
+pretrained: true
+
+
+

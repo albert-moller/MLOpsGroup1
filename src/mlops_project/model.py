@@ -1,26 +1,30 @@
+import hydra
 import torch
 import timm
+import logging
+import pytorch_lightning as pl
 from torch import nn
+from typing import Any, Tuple
+from omegaconf import DictConfig, OmegaConf
 
-class Model(nn.Module):
-    """
-    Implementation of the MobileNetV3 model
-    using a pre-trained model from the TIMM 
-    framework.
-    """
-    def __init__(self, model_name: str = 'mobilenetv3_small_100', num_classes: int = 38, pretrained: bool = True) -> None:
+logger = logging.getLogger('Model')
+logger.setLevel(logging.INFO)
+
+class MobileNetV3(pl.LightningModule):
+    """Implementation of the MobileNetV3 model using a pre-trained model from the TIMM framework."""
+    
+    def __init__(self, cfg: DictConfig) -> None:
         """
         Initializes the MobileNetV3 Model.
 
         Args:
-            model_name (str): Name of the pre-trained model from the TIMM framework.
-            num_classes (int): Number of output classes for classification.
-            pretrained (bool): Whether to load pre-trained weights.
+            cfg (DictConfig): Config containing model and optimizer parameters.
         """
         super().__init__()
-        self.model_name = model_name
-        self.num_classes = num_classes
-        self.pretrained = pretrained
+        self.cfg = cfg
+        self.model_cfg = self.cfg.model
+        self.optimizer_cfg = self.cfg.optimizer
+        self.criterion = nn.CrossEntropyLoss()
         self.model = self.load_model()
         self.prepare_model_for_finetuning()
 
@@ -28,7 +32,11 @@ class Model(nn.Module):
         """
         Initializes the MobileNetV3 Model using the TIMM framework.
         """
-        model = timm.create_model(model_name=self.model_name, pretrained=self.pretrained)
+        model = timm.create_model(
+            model_name=self.model_cfg.model_name,
+            pretrained=self.model_cfg.pretrained,
+            num_classes=self.model_cfg.num_classes
+        )
         return model
 
     def prepare_model_for_finetuning(self) -> None:
@@ -38,25 +46,28 @@ class Model(nn.Module):
         model such that it accounts for the correct number
         of classes.
         """
+        num_classes = self.cfg.model.num_classes
         # Freeze all layers. 
         for param in self.model.parameters():
             param.requires_grad = False
-        # Unfreeze the last convolutional layer for fine-tuning.
-        for param in self.model.blocks[-1].parameters():
-            param.requires_grad = True
         # Replace the output classification layer.
         if hasattr(self.model, 'fc'):
-            self.model.fc = nn.Linear(self.model.fc.in_features, self.num_classes)
+            self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
             # Unfreeze the linear output layer.
             for param in self.model.fc.parameters():
                 param.requires_grad = True
         elif hasattr(self.model, 'classifier'):
-            self.model.classifier = nn.Linear(self.model.classifier.in_features, self.num_classes)
+            self.model.classifier = nn.Linear(self.model.classifier.in_features, num_classes)
             # Unfreeze the classification layer.
             for param in self.model.classifier.parameters():
                 param.requires_grad = True
         else:
-            raise ValueError(f"The selected model {self.model_name} does not have an output classification layer.")
+            raise ValueError(f"The selected model {self.model_name} does not have a linear classification layer.")
+    
+    @staticmethod
+    def compute_accuracy(pred: torch.Tensor, target: torch.Tensor):
+        accuracy = (pred.argmax(dim=1) == target).float().mean().item()
+        return accuracy
         
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -64,18 +75,70 @@ class Model(nn.Module):
         """
         return self.model(x)
     
-if __name__ == "__main__":
-    # Initialize model for fine-tuning.
-    model = Model()
-    # Calculate the total number of model parameters.
+    def training_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> torch.Tensor:
+        # Unpack images and labels.
+        img, label = batch
+        # Perform forward pass.
+        y_pred = self(img)
+        # Compute the training loss
+        loss = self.criterion(y_pred, label)
+        # Compute training accuracy.
+        accuracy = MobileNetV3.compute_accuracy(y_pred, label)
+        # Log train metrics.
+        self.log('train_loss', loss)
+        self.log('train_accuracy', accuracy)
+        return loss
+    
+    def validation_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
+        # Unpack images and labels.
+        img, label = batch
+        # Perform forward pass.
+        y_pred = self(img)
+        # Compute the training loss
+        loss = self.criterion(y_pred, label)
+        # Compute training accuracy.
+        accuracy = MobileNetV3.compute_accuracy(y_pred, label)
+        # Log validation metrics.
+        self.log('val_loss', loss, on_epoch=True)
+        self.log('val_accuracy', accuracy, on_epoch=True)
+    
+    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
+        # Unpack images and labels.
+        img, label = batch
+        # Perform forward pass.
+        y_pred = self(img)
+        # Compute the training loss
+        loss = self.criterion(y_pred, label)
+        # Compute training accuracy.
+        accuracy = MobileNetV3.compute_accuracy(y_pred, label)
+        # Log test metrics.
+        self.log('test_loss', loss)
+        self.log('test_accuracy', accuracy)
+
+    def configure_optimizers(self):
+        # Create optimizer dynamically based on optimizer config.
+        optimizer_class = getattr(torch.optim, self.optimizer_cfg.optimizer.type)
+        optimizer = optimizer_class(self.parameters(), **self.optimizer_cfg.optimizer.params)
+        return optimizer
+    
+@hydra.main(config_path="../../configs", config_name="config", version_base=None)
+def main(cfg: DictConfig):
+    # Display the config object.
+    logger.info(f"Config:\n{OmegaConf.to_yaml(cfg)}")
+    # Initialize model for fine-tuning
+    model = MobileNetV3(cfg)
+    # Calculate total number of model parameters
     total_params = sum(p.numel() for p in model.parameters())
-    print(f"Total number of parameters: {total_params}")   
-    # Calculate the number of trainable parameters.
+    logger.info(f"Total number of parameters: {total_params}")
+    # Calculate the number of trainable parameters
     finetune_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Number of parameters being fine-tuned: {finetune_params}")
+    logger.info(f"Number of parameters being fine-tuned: {finetune_params}")
     # Dummy input for testing.
     dummy_input = torch.randn(1, 3, 224, 224)
     output = model(dummy_input)
-    print(f"Output shape: {output.shape}")
+    logger.info(f"Output shape: {output.shape}")
+
+if __name__ == "__main__":
+    main()
 
     

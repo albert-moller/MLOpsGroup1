@@ -1,42 +1,56 @@
+
 import os
-from pathlib import Path
-from kaggle.api.kaggle_api_extended import KaggleApi
-from torchvision import datasets
-from torch.utils.data import Dataset, DataLoader
+import numpy as np
+import hydra
+import logging
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
+from omegaconf import DictConfig
+from typing import Tuple
 from PIL import Image
-import numpy as np
-import shutil
+from typing import Callable, Optional
+from pathlib import Path
+from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader, random_split
 
+from utils.download_dataset import download_dataset
 
-# Define the paths for raw and processed data
-RAW_DATA_PATH = Path("data/raw")
-PROCESSED_DATA_PATH = Path("data/processed")
+logger = logging.getLogger('Data')
+logger.setLevel(logging.INFO)
+      
+class PlantVillageDataset(Dataset):
+    """Custom Dataset for PlantVillage"""
 
+    def __init__(self, raw_data_path: Path, transform: Optional[Callable] = None):
+        self.raw_data_path = raw_data_path
+        self.transform = transform
+        self.image_paths = []
+        self.labels = []
+        self.class_to_idx = {}
+        self.load_and_store_data()
 
-# Function to download dataset using Kaggle API
-def download_plantvillage_data():
-    """
-    Downloads and unzips the PlantVillage dataset if it doesn't already exist.
-    """
-    if not RAW_DATA_PATH.exists():
-        print(f"Creating directory {RAW_DATA_PATH}")
-        RAW_DATA_PATH.mkdir(parents=True)
+    def load_and_store_data(self):
+        for class_name in sorted(os.listdir(self.raw_data_path)):
+            class_dir = os.path.join(self.raw_data_path, class_name)
+            if os.path.isdir(class_dir):
+                self.class_to_idx[class_name] = len(self.class_to_idx)
+                for image_name in os.listdir(class_dir):
+                    self.image_paths.append(os.path.join(class_dir, image_name))
+                    self.labels.append(self.class_to_idx[class_name])
 
-    dataset_path = RAW_DATA_PATH / "plantvillage"
+    def __len__(self):
+        return len(self.image_paths)
     
-    if not dataset_path.exists():
-        print("Downloading the dataset from Kaggle...")
-        api = KaggleApi()
-        api.authenticate()
+    def __getitem__(self, idx):
+        img_path = self.image_paths[idx]
+        label = self.labels[idx]
+        image = Image.open(img_path).convert("RGB")
 
-        # Download and unzip PlantVillage dataset
-        api.dataset_download_files('mohitsingh1804/plantvillage', path=str(RAW_DATA_PATH), unzip=True)
-        print("Dataset downloaded and unzipped.")
-    else:
-        print("Dataset already exists.")
-
+        if self.transform:
+            image = self.transform(image=np.array(image))['image']
+        
+        return image, label
+    
 
 # Function to define image transformations (Albumentations)
 def get_transforms():
@@ -44,115 +58,56 @@ def get_transforms():
     Define the image transformations for preprocessing.
     """
     transform = A.Compose([
-        A.RandomCrop(width=256, height=256),  # Random crop
-        A.HorizontalFlip(p=0.5),  # Random horizontal flip
-        A.RandomBrightnessContrast(p=0.2),  # Random brightness and contrast adjustments
-        A.Rotate(limit=30, p=0.5),  # Random rotation
-        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), p=1.0),  # ImageNet normalization
+        A.Resize(224, 224),  # Resize to (224, 224).
+        A.RandomBrightnessContrast(p=0.1),  # Adjust brightness and contrast.
+        A.HorizontalFlip(p=0.2),  # Random horizontal flip.
+        A.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.05, rotate_limit=15, p=0.1),  # Slight shifts, scaling, and rotations
+        A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),  # Normalize to [-1, 1]
         ToTensorV2()  # Convert to PyTorch tensor
     ])
     return transform
 
-
-# Custom Dataset class to load images
-class MyDataset(Dataset):
-    def __init__(self, data_path: Path, transform=None):
-        """
-        Initialize dataset with path to images and transformations.
-        """
-        self.data_path = data_path
-        self.transform = transform
-        # Get all image file paths (assumes images are in subfolders)
-        self.image_paths = list(self.data_path.glob('**/*.jpg'))  # Modify this for other image formats like .png, .jpeg
-        if not self.image_paths:
-            raise ValueError(f"No images found in {self.data_path}. Please check the folder structure.")
-        
-        # Assuming folder names are the labels
-        self.labels = [p.parent.name for p in self.image_paths]
-
-    def __len__(self):
-        return len(self.image_paths)
-
-    def __getitem__(self, index):
-        # Get image path and label
-        img_path = self.image_paths[index]
-        label = self.labels[index]
-        
-        # Load image
-        img = Image.open(img_path).convert("RGB")
-        
-        # Apply transformations if defined
-        if self.transform:
-            img = self.transform(image=np.array(img))['image']
-        
-        return img, label
-
-
-# Function to preprocess and save images
-def preprocess(raw_data_path: Path, output_folder: Path):
+def get_dataloaders(cfg: DictConfig) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
-    Preprocess the raw data and save it to the output folder.
-    """
-    # Check if output folder exists, if not, create it
-    if not output_folder.exists():
-        output_folder.mkdir(parents=True)
-    
-    # Create subfolders for train and validation
-    train_folder = output_folder / "train"
-    val_folder = output_folder / "val"
-    
-    if not train_folder.exists():
-        train_folder.mkdir()
-    
-    if not val_folder.exists():
-        val_folder.mkdir()
+    Create train, validation, and test dataloaders for the PlantVillage dataset.
 
-    # Define transformations
+    Args:
+        cfg (DictConfig): Hydra configuration object with experiment parameters.
+
+    Returns:
+        Tuple[DataLoader, DataLoader, DataLoader]: Train, validation, and test dataloaders.
+    """
+    # Download dataset if not already downloaded.
+    download_dataset(cfg)
+
+    # Transformations
     transform = get_transforms()
 
-    # Create dataset
-    dataset = MyDataset(raw_data_path, transform=transform)
+    # Create the dataset
+    dataset = PlantVillageDataset(raw_data_path=cfg.dataset.raw_dir, transform=transform)
 
-    # Split data (80% for training, 20% for validation)
-    train_size = int(0.8 * len(dataset))  # 80% for training
-    val_size = len(dataset) - train_size  # 20% for validation
-    
-    # Split data into training and validation (no need for slicing, just split by index)
-    train_data = dataset.image_paths[:train_size]
-    val_data = dataset.image_paths[train_size:]
+    # Split the dataset
+    total_size = len(dataset)
+    train_size = int(cfg.train_split * total_size)
+    val_size = int(cfg.val_split * total_size)
+    test_size = total_size - train_size - val_size
 
-    # Save images to processed folder
-    print("Processing and saving train images...")
-    for i, img_path in enumerate(train_data):
-        img = Image.open(img_path).convert("RGB")
-        img_save_path = train_folder / f"img_{i}.jpg"
-        img.save(img_save_path)  # Save the image after transformation
-    
-    print("Processing and saving validation images...")
-    for i, img_path in enumerate(val_data):
-        img = Image.open(img_path).convert("RGB")
-        img_save_path = val_folder / f"img_{i}.jpg"
-        img.save(img_save_path)  # Save the image after transformation
+    train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
 
-    print(f"Training data saved to {train_folder}")
-    print(f"Validation data saved to {val_folder}")
+    # Create dataloaders
+    train_loader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=cfg.batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=cfg.batch_size, shuffle=False)
 
+    return train_loader, val_loader, test_loader
 
-# Main function to run the entire preprocessing process
-def main():
-    print(f"Starting preprocessing for raw data in {RAW_DATA_PATH}...")
-    
-    # Step 1: Download data if it doesn't exist
-    download_plantvillage_data()
-
-    # Step 2: Preprocess data
-    preprocess(RAW_DATA_PATH, PROCESSED_DATA_PATH)
-
-    print("Preprocessing complete.")
-
+@hydra.main(version_base=None, config_path="../../configs", config_name="config")
+def main(cfg: DictConfig):
+    train_loader, val_loader, test_loader = get_dataloaders(cfg)
+    # Log DataLoader info
+    logger.info(f"Train Loader: {len(train_loader.dataset)} samples")
+    logger.info(f"Validation Loader: {len(val_loader.dataset)} samples")
+    logger.info(f"Test Loader: {len(test_loader.dataset)} samples")
 
 if __name__ == "__main__":
     main()
-
-
-

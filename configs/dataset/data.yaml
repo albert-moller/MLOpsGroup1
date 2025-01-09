@@ -1,0 +1,6 @@
+dataset_name: mohitsingh1804/plantvillage
+dataset_dir: data
+raw_dir: data/raw
+train_folder: train
+val_folder: val
+

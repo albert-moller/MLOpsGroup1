@@ -17,4 +17,6 @@ monitor: "val_loss"
 patience: 5
 mode: "min"
 
-
+wandb:
+  project: "plant_disease_detection"
+  run_name: "finetune_mobilenetv3"

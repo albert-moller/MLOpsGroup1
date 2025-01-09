@@ -2,3 +2,9 @@ data/*
 outputs/*
 env.
 lightning_logs/*
+__pycache__/
+*.pyc
+*.pyo
+wandb*
+models/*
+mobilenetv3_model.pth

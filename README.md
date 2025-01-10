@@ -1,6 +1,15 @@
-# mlops_project
+# MLOps Project Description
+#### Goal
+This is the project description for the 02476 Machine Learning Operations course at DTU. The aim of this project is to apply course material to a machine learning problem, specifically detecting plant diseases through image classification. The project will leverage pre-trained models and advanced frameworks to achieve accurate predictions. Findings will be presented and submitted alongside the written code.
 
-mlops project
+#### Framework
+The selected framework for this project is PyTorch Image Models (TIMM), which provides a variety of pre-trained models for efficient transfer learning. Albumentations will be used for advanced image augmentations, enhancing the training process. These frameworks will be integrated into the project environment while adhering to structured coding practices with version control.
+
+#### Data 
+The dataset chosen is the PlantVillage dataset, sourced from Kaggle. It contains over 50,000 images of healthy and diseased plant leaves, spanning multiple plant species and disease types. This dataset will be used to train and validate the classification model.
+
+#### Models
+The project will parameter-efficient fine-tune a pre-trained image classification model from the TIMM framework. The chosen architecture is MobileNetV3. The model will be evaluated for its ability to accurately classify plant diseases, leveraging transfer learning to optimize performance.
 
 ## Project structure
 

@@ -1,15 +1,18 @@
-# MLOps Project Description
+# Machine Learning Operations (MLops) Project: Group 1
+
+## Project Description
+
 #### Goal
-This is the project description for the 02476 Machine Learning Operations course at DTU. The aim of this project is to apply course material to a machine learning problem, specifically detecting plant diseases through image classification. The project will leverage pre-trained models and advanced frameworks to achieve accurate predictions. Findings will be presented and submitted alongside the written code.
+This is the project description for the 02476 Machine Learning Operations course at DTU. The aim of this project is to apply course material, methods and tools to a machine learning problem, specifically detecting plant diseases through image classification. By being able to identify plant diseases, farmers will be able to promptly remove the diseased plants thus reducing their crop losses, while significantly boosting their agricultural productivity and efficiency. The project will leverage pre-trained models and advanced frameworks to achieve accurate predictions. Findings will be presented and submitted alongside the written code.
 
 #### Framework
-The selected framework for this project is PyTorch Image Models (TIMM), which provides a variety of pre-trained models for efficient transfer learning. Albumentations will be used for advanced image augmentations, enhancing the training process. These frameworks will be integrated into the project environment while adhering to structured coding practices with version control.
+For this project, we intend to use the TIMM framework for Computer Vision (PyTorch Image Models) as well as the Albumentations framework for image augmentations. We will be using the TIMM framework to construct and load a pre-trained MobileNetV3 deep learning model and fine-tune it using our plant diseases dataset. In addition, we will be using the Albumenations framework for data augmentation to enhance the robustness of the MobileNetV3 model. These frameworks will be integrated into the project environment while adhering to structured coding practices with version control.
 
 #### Data 
-The dataset chosen is the PlantVillage dataset, sourced from Kaggle. It contains over 50,000 images of healthy and diseased plant leaves, spanning multiple plant species and disease types. This dataset will be used to train and validate the classification model.
+The dataset we have chosen to use for our project is the [Plant Village Dataset](https://www.kaggle.com/datasets/mohitsingh1804/plantvillage) from Kaggle. This dataset contains 54,305 images of both diseased and healthy plants collected under controlled conditions. There are a total of 38 classes. This means that the number of images per class is quite sparse. Hence, there is a need to leverage a pre-trained deep-learning model to maximize classification performance. The images will be normalized and various data augmentations will be applied with low probabilities to enhance model robustness. This dataset will be used to train and validate the classification model.
 
 #### Models
-The project will parameter-efficient fine-tune a pre-trained image classification model from the TIMM framework. The chosen architecture is MobileNetV3. The model will be evaluated for its ability to accurately classify plant diseases, leveraging transfer learning to optimize performance.
+The project will parameter-efficient fine-tune a pre-trained image classification model from the TIMM framework. The chosen architecture is [MobileNetV3](https://arxiv.org/abs/1905.02244). The MobileNetV3 model is known for its efficiency and high performance while using minimal computational resources. This will allow us to fine-tune the model on the Plant Village Dataset, while being able to train it on our laptops. The model will be evaluated for its ability to accurately classify plant diseases, leveraging transfer learning to optimize performance.
 
 ## Project structure
 

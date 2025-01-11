@@ -20,7 +20,7 @@ logger.debug(f"Using device: {DEVICE}")
 
 
 @hydra.main(version_base=None, config_path="../../configs", config_name="config")
-def train(cfg: DictConfig):
+def train(cfg: DictConfig) -> None:
     # Set random seed.
     seed_everything(cfg.seed)
     # Initialize Wandb

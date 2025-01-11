@@ -2,13 +2,13 @@
 import os
 import numpy as np
 import hydra
+import torch
 import logging
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from omegaconf import DictConfig
-from typing import Tuple
 from PIL import Image
-from typing import Callable, Optional
+from typing import Tuple, Callable, Optional, List, Dict
 from pathlib import Path
 from torch.utils.data import Dataset
 from torch.utils.data import Dataset, DataLoader, random_split
@@ -21,15 +21,15 @@ logger.setLevel(logging.INFO)
 class PlantVillageDataset(Dataset):
     """Custom Dataset for PlantVillage"""
 
-    def __init__(self, raw_data_path: Path, transform: Optional[Callable] = None):
+    def __init__(self, raw_data_path: Path, transform: Optional[Callable] = None) -> None:
         self.raw_data_path = raw_data_path
-        self.transform = transform
-        self.image_paths = []
-        self.labels = []
-        self.class_to_idx = {}
+        self.transform: Optional[Callable] = transform
+        self.image_paths: List[str] = []
+        self.labels: List[int] = []
+        self.class_to_idx: Dict[str, int] = {}
         self.load_and_store_data()
 
-    def load_and_store_data(self):
+    def load_and_store_data(self) -> None:
         for class_name in sorted(os.listdir(self.raw_data_path)):
             class_dir = os.path.join(self.raw_data_path, class_name)
             if os.path.isdir(class_dir):
@@ -41,7 +41,7 @@ class PlantVillageDataset(Dataset):
     def __len__(self):
         return len(self.image_paths)
     
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
         img_path = self.image_paths[idx]
         label = self.labels[idx]
         image = Image.open(img_path).convert("RGB")
@@ -53,7 +53,7 @@ class PlantVillageDataset(Dataset):
     
 
 # Function to define image transformations (Albumentations)
-def get_transforms():
+def get_transforms() -> A.Compose:
     """
     Define the image transformations for preprocessing.
     """

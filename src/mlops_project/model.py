@@ -65,7 +65,7 @@ class MobileNetV3(pl.LightningModule):
             raise ValueError(f"The selected model {self.model_name} does not have a linear classification layer.")
     
     @staticmethod
-    def compute_accuracy(pred: torch.Tensor, target: torch.Tensor):
+    def compute_accuracy(pred: torch.Tensor, target: torch.Tensor) -> float:
         accuracy = (pred.argmax(dim=1) == target).float().mean().item()
         return accuracy
         
@@ -115,14 +115,14 @@ class MobileNetV3(pl.LightningModule):
         self.log('test_loss', loss)
         self.log('test_accuracy', accuracy)
 
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> torch.optim.Optimizer:
         # Create optimizer dynamically based on optimizer config.
         optimizer_class = getattr(torch.optim, self.optimizer_cfg.optimizer.type)
         optimizer = optimizer_class(self.parameters(), **self.optimizer_cfg.optimizer.params)
         return optimizer
     
 @hydra.main(config_path="../../configs", config_name="config", version_base=None)
-def main(cfg: DictConfig):
+def main(cfg: DictConfig) -> None:
     # Display the config object.
     logger.info(f"Config:\n{OmegaConf.to_yaml(cfg)}")
     # Initialize model for fine-tuning

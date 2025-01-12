@@ -5,6 +5,7 @@ import hydra
 import torch
 import logging
 import albumentations as A
+import typer
 from albumentations.pytorch import ToTensorV2
 from omegaconf import DictConfig
 from PIL import Image
@@ -13,10 +14,13 @@ from pathlib import Path
 from torch.utils.data import Dataset
 from torch.utils.data import Dataset, DataLoader, random_split
 
-from utils.download_dataset import download_dataset
+from mlops_project.utils.download_dataset import download_dataset
 
 logger = logging.getLogger('Data')
 logger.setLevel(logging.INFO)
+
+# Create a Typer app.
+app = typer.Typer()
       
 class PlantVillageDataset(Dataset):
     """Custom Dataset for PlantVillage"""
@@ -38,7 +42,7 @@ class PlantVillageDataset(Dataset):
                     self.image_paths.append(os.path.join(class_dir, image_name))
                     self.labels.append(self.class_to_idx[class_name])
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.image_paths)
     
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
@@ -101,13 +105,14 @@ def get_dataloaders(cfg: DictConfig) -> Tuple[DataLoader, DataLoader, DataLoader
 
     return train_loader, val_loader, test_loader
 
-@hydra.main(version_base=None, config_path="../../configs", config_name="config")
-def main(cfg: DictConfig):
+@app.command()
+@hydra.main(version_base=None, config_path=f"{os.path.dirname(__file__)}/../../configs", config_name="config")
+def main(cfg: DictConfig) -> None:
     train_loader, val_loader, test_loader = get_dataloaders(cfg)
-    # Log DataLoader info
+    # Log DataLoader info.
     logger.info(f"Train Loader: {len(train_loader.dataset)} samples")
     logger.info(f"Validation Loader: {len(val_loader.dataset)} samples")
     logger.info(f"Test Loader: {len(test_loader.dataset)} samples")
 
 if __name__ == "__main__":
-    main()
+    typer.run(main)

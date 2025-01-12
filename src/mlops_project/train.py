@@ -2,28 +2,35 @@ import torch
 import os
 import hydra
 import wandb
+import typer
 from dotenv import load_dotenv
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from omegaconf import DictConfig, OmegaConf
-from model import MobileNetV3
-from data import get_dataloaders
+from mlops_project.model import MobileNetV3
+from mlops_project.data import get_dataloaders
+from mlops_project.config import MainConfig
 from loguru import logger
-
-load_dotenv()
-os.environ["WANDB_API_KEY"] = os.getenv("WANDB_API_KEY")
-print(f"WANDB_API_KEY: {os.getenv('WANDB_API_KEY')}")
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 logger.debug(f"Using device: {DEVICE}")
 
+# Create a Typer app.
+app = typer.Typer()
 
-@hydra.main(version_base=None, config_path="../../configs", config_name="config")
+@hydra.main(version_base=None, config_path=f"{os.path.dirname(__file__)}/../../configs", config_name="config")
 def train(cfg: DictConfig) -> None:
+    cfg: MainConfig = OmegaConf.structured(cfg)
     # Set random seed.
     seed_everything(cfg.seed)
     # Initialize Wandb
+    load_dotenv()
+    wandb_api_key = os.getenv("WANDB_API_KEY")
+    if not wandb_api_key:
+        logger.info("Wandb API key not found in .env file or environment variables.")
+        return
+    wandb.login(key=wandb_api_key)
     wandb.init(
         project=cfg.wandb.project,
         name=cfg.experiment_name,
@@ -78,5 +85,9 @@ def train(cfg: DictConfig) -> None:
     # Finish Wandb session
     wandb.finish()
 
-if __name__ == "__main__":
+@app.command()
+def main():
     train()
+
+if __name__ == "__main__":
+    typer.run(main)

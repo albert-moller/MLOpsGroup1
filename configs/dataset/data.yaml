@@ -3,4 +3,5 @@ dataset_dir: data
 raw_dir: data/raw
 train_folder: train
 val_folder: val
-
+mean: [0.5, 0.5, 0.5]
+std: [0.5, 0.5, 0.5] 

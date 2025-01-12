@@ -1,9 +1,24 @@
-outputs/*
-env.
-lightning_logs/*
-__pycache__/
+# Ignore Python cache files
+**/__pycache__/
 *.pyc
 *.pyo
-wandb*
-models/*
+
+# Ignore virtual environments
+.env
+venv/
+*.env
+
+# Ignore outputs
+outputs/
+lightning_logs/
+wandb/
+models/
 mobilenetv3_model.pth
+
+# Ignore build files
+build/
+dist/
+*.egg-info/
+
+# General cache and temp files
+.DS_Store

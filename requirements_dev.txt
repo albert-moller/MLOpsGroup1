@@ -5,7 +5,9 @@ invoke==2.2.0
 pre-commit==3.5.0
 
 # testing
+hydra-core==1.3.2
 pytest==7.4.3
+torch==2.5.1
 coverage==7.6.9
 
 # linting

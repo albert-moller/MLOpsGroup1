@@ -65,7 +65,7 @@ def get_transforms() -> A.Compose:
         A.Resize(224, 224),  # Resize to (224, 224).
         A.RandomBrightnessContrast(p=0.1),  # Adjust brightness and contrast.
         A.HorizontalFlip(p=0.2),  # Random horizontal flip.
-        A.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.05, rotate_limit=15, p=0.1),  # Slight shifts, scaling, and rotations
+        A.Affine(scale=(0.9, 1.1), rotate=(-15, 15), translate_percent=(0.1, 0.1), p=0.1),  # Slight shifts, scaling, and rotations
         A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),  # Normalize to [-1, 1]
         ToTensorV2()  # Convert to PyTorch tensor
     ])

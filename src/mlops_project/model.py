@@ -4,7 +4,7 @@ import timm
 import logging
 import pytorch_lightning as pl
 from torch import nn
-from typing import Any, Tuple
+from typing import Tuple
 from omegaconf import DictConfig, OmegaConf
 
 logger = logging.getLogger('Model')

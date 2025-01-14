@@ -4,7 +4,6 @@ import typer
 import hydra
 import matplotlib.pyplot as plt
 from torchvision import transforms
-from dotenv import load_dotenv
 from sklearn.metrics import confusion_matrix
 from omegaconf import DictConfig, OmegaConf
 from mlops_project.model import MobileNetV3

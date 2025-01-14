@@ -11,7 +11,6 @@ from omegaconf import DictConfig
 from PIL import Image
 from typing import Tuple, Callable, Optional, List, Dict
 from pathlib import Path
-from torch.utils.data import Dataset
 from torch.utils.data import Dataset, DataLoader, random_split
 
 from mlops_project.utils.download_dataset import download_dataset

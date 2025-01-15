@@ -18,6 +18,7 @@ logger.debug(f"Using device: {DEVICE}")
 # Create a Typer app
 app = typer.Typer()
 
+
 @hydra.main(version_base=None, config_path=f"{os.path.dirname(__file__)}/../../configs", config_name="config")
 def evaluate(cfg: DictConfig) -> None:
     cfg: MainConfig = OmegaConf.structured(cfg)
@@ -35,7 +36,7 @@ def evaluate(cfg: DictConfig) -> None:
     wandb.init(
         project=cfg.wandb.project,
         name=f"{cfg.experiment_name}_evaluation",
-        config=OmegaConf.to_container(cfg, resolve=True)
+        config=OmegaConf.to_container(cfg, resolve=True),
     )
     wandb_logger = WandbLogger(project=cfg.wandb.project, name=f"{cfg.experiment_name}_evaluation")
 
@@ -52,11 +53,7 @@ def evaluate(cfg: DictConfig) -> None:
     logger.info(f"Loaded model from '{model_path}'.")
 
     # Define the Trainer for evaluation
-    trainer = Trainer(
-        logger=wandb_logger,
-        precision=cfg.precision,
-        log_every_n_steps=10
-    )
+    trainer = Trainer(logger=wandb_logger, precision=cfg.precision, log_every_n_steps=10)
 
     # Evaluate the model on the test dataset
     logger.info("Starting model evaluation on the test dataset.")
@@ -69,9 +66,11 @@ def evaluate(cfg: DictConfig) -> None:
     # Finish Wandb session
     wandb.finish()
 
+
 @app.command()
 def main():
     evaluate()
+
 
 if __name__ == "__main__":
     typer.run(main)

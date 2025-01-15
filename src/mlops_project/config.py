@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Tuple
 from pathlib import Path
 
+
 @dataclass
 class DatasetConfig:
     dataset_name: str
@@ -11,6 +12,7 @@ class DatasetConfig:
     val_folder: str
     mean: Tuple[float, float, float]
     std: Tuple[float, float, float]
+
 
 @dataclass
 class ModelConfig:
@@ -24,6 +26,7 @@ class ModelConfig:
         if not isinstance(self.pretrained, bool):
             raise ValueError("Pre-trained must be a boolean.")
 
+
 @dataclass
 class OptimizerParams:
     lr: float
@@ -35,6 +38,7 @@ class OptimizerParams:
         if self.weight_decay < 0:
             raise ValueError("Weight decay must be a non-negative float.")
 
+
 @dataclass
 class OptimizerConfig:
     type: str
@@ -43,6 +47,7 @@ class OptimizerConfig:
     def __post_init__(self):
         if self.type not in ["Adam", "SGD", "RMSprop"]:
             raise ValueError(f"Optimizer must be one of ['Adam', 'SGD', 'RMSprop'], got '{self.type}'.")
+
 
 @dataclass
 class WandbConfig:
@@ -54,6 +59,7 @@ class WandbConfig:
             raise ValueError("Wandb project must be a non-empty string.")
         if not self.run_name or not isinstance(self.run_name, str):
             raise ValueError("Wandb run name must be a non-empty string.")
+
 
 @dataclass
 class MainConfig:

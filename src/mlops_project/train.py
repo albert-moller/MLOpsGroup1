@@ -19,6 +19,7 @@ logger.debug(f"Using device: {DEVICE}")
 # Create a Typer app.
 app = typer.Typer()
 
+
 @hydra.main(version_base=None, config_path=f"{os.path.dirname(__file__)}/../../configs", config_name="config")
 def train(cfg: DictConfig) -> None:
     cfg: MainConfig = OmegaConf.structured(cfg)
@@ -31,11 +32,7 @@ def train(cfg: DictConfig) -> None:
         logger.info("Wandb API key not found in .env file or environment variables.")
         return
     wandb.login(key=wandb_api_key)
-    wandb.init(
-        project=cfg.wandb.project,
-        name=cfg.experiment_name,
-        config=OmegaConf.to_container(cfg, resolve=True)  
-    )
+    wandb.init(project=cfg.wandb.project, name=cfg.experiment_name, config=OmegaConf.to_container(cfg, resolve=True))
     wandb_logger = WandbLogger(project=cfg.wandb.project, name=cfg.experiment_name, log_model=True)
 
     # Load dataloaders.
@@ -48,20 +45,16 @@ def train(cfg: DictConfig) -> None:
         filename="{epoch}-{val_loss:.2f}",
         save_top_k=1,
         monitor=cfg.monitor,
-        mode=cfg.mode
+        mode=cfg.mode,
     )
-    early_stopping_callback = EarlyStopping(
-        monitor=cfg.monitor,
-        patience=cfg.patience,
-        mode=cfg.mode
-    )
+    early_stopping_callback = EarlyStopping(monitor=cfg.monitor, patience=cfg.patience, mode=cfg.mode)
     # Define trainer.
     trainer = Trainer(
         max_epochs=cfg.num_epochs,
         precision=cfg.precision,
         callbacks=[checkpoint_callback, early_stopping_callback],
         logger=wandb_logger,
-        log_every_n_steps=10
+        log_every_n_steps=10,
     )
     # Log initial model parameters
     wandb.watch(model, log="all", log_freq=100)
@@ -76,7 +69,7 @@ def train(cfg: DictConfig) -> None:
         "mobilenetv3_model",
         type="model",
         description="A fine-tuned MobileNetV3 model for plant disease classification",
-        metadata={"num_epochs": cfg.num_epochs, "batch_size": cfg.batch_size}
+        metadata={"num_epochs": cfg.num_epochs, "batch_size": cfg.batch_size},
     )
     artifact.add_file("mobilenetv3_model.pth")
     wandb.run.log_artifact(artifact)
@@ -85,9 +78,11 @@ def train(cfg: DictConfig) -> None:
     # Finish Wandb session
     wandb.finish()
 
+
 @app.command()
 def main():
     train()
+
 
 if __name__ == "__main__":
     typer.run(main)

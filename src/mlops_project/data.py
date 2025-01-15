@@ -1,4 +1,3 @@
-
 import os
 import numpy as np
 import hydra
@@ -15,12 +14,13 @@ from torch.utils.data import Dataset, DataLoader, random_split
 
 from mlops_project.utils.download_dataset import download_dataset
 
-logger = logging.getLogger('Data')
+logger = logging.getLogger("Data")
 logger.setLevel(logging.INFO)
 
 # Create a Typer app.
 app = typer.Typer()
-      
+
+
 class PlantVillageDataset(Dataset):
     """Custom Dataset for PlantVillage"""
 
@@ -43,32 +43,37 @@ class PlantVillageDataset(Dataset):
 
     def __len__(self) -> int:
         return len(self.image_paths)
-    
+
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
         img_path = self.image_paths[idx]
         label = self.labels[idx]
         image = Image.open(img_path).convert("RGB")
 
         if self.transform:
-            image = self.transform(image=np.array(image))['image']
-        
+            image = self.transform(image=np.array(image))["image"]
+
         return image, label
-    
+
 
 # Function to define image transformations (Albumentations)
 def get_transforms() -> A.Compose:
     """
     Define the image transformations for preprocessing.
     """
-    transform = A.Compose([
-        A.Resize(224, 224),  # Resize to (224, 224).
-        A.RandomBrightnessContrast(p=0.1),  # Adjust brightness and contrast.
-        A.HorizontalFlip(p=0.2),  # Random horizontal flip.
-        A.Affine(scale=(0.9, 1.1), rotate=(-15, 15), translate_percent=(0.1, 0.1), p=0.1),  # Slight shifts, scaling, and rotations
-        A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),  # Normalize to [-1, 1]
-        ToTensorV2()  # Convert to PyTorch tensor
-    ])
+    transform = A.Compose(
+        [
+            A.Resize(224, 224),  # Resize to (224, 224).
+            A.RandomBrightnessContrast(p=0.1),  # Adjust brightness and contrast.
+            A.HorizontalFlip(p=0.2),  # Random horizontal flip.
+            A.Affine(
+                scale=(0.9, 1.1), rotate=(-15, 15), translate_percent=(0.1, 0.1), p=0.1
+            ),  # Slight shifts, scaling, and rotations
+            A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),  # Normalize to [-1, 1]
+            ToTensorV2(),  # Convert to PyTorch tensor
+        ]
+    )
     return transform
+
 
 def get_dataloaders(cfg: DictConfig) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
@@ -104,6 +109,7 @@ def get_dataloaders(cfg: DictConfig) -> Tuple[DataLoader, DataLoader, DataLoader
 
     return train_loader, val_loader, test_loader
 
+
 @app.command()
 @hydra.main(version_base=None, config_path=f"{os.path.dirname(__file__)}/../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
@@ -112,6 +118,7 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Train Loader: {len(train_loader.dataset)} samples")
     logger.info(f"Validation Loader: {len(val_loader.dataset)} samples")
     logger.info(f"Test Loader: {len(test_loader.dataset)} samples")
+
 
 if __name__ == "__main__":
     typer.run(main)

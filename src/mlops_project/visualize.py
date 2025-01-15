@@ -17,6 +17,7 @@ logger.debug(f"Using device: {DEVICE}")
 # Create a Typer app
 app = typer.Typer()
 
+
 @hydra.main(version_base=None, config_path=f"{os.path.dirname(__file__)}/../../configs", config_name="config")
 def visualize(cfg: DictConfig) -> None:
     cfg: MainConfig = OmegaConf.structured(cfg)
@@ -28,7 +29,7 @@ def visualize(cfg: DictConfig) -> None:
         logger.info(f"Model file '{model_path}' not found. Please ensure the model is trained and saved.")
         return
     model.load_state_dict(torch.load(model_path, map_location=DEVICE))
-    model.eval() 
+    model.eval()
     logger.info(f"Loaded model from '{model_path}'.")
 
     # Load the test dataloader.
@@ -48,40 +49,43 @@ def visualize(cfg: DictConfig) -> None:
 
     # Calculate confusion matrix.
     cm = confusion_matrix(all_labels, all_preds, labels=list(range(cfg.model.num_classes)))
-    class_wise_errors = cm.sum(axis=1) - cm.diagonal() 
+    class_wise_errors = cm.sum(axis=1) - cm.diagonal()
 
     # Identify struggling classes (top 3 by error count).
-    struggling_classes = sorted(
-        range(len(class_wise_errors)),
-        key=lambda x: class_wise_errors[x],
-        reverse=True
-    )[:3]
+    struggling_classes = sorted(range(len(class_wise_errors)), key=lambda x: class_wise_errors[x], reverse=True)[:3]
     logger.info(f"Classes the model struggles with: {struggling_classes}")
 
     # Transform for displaying images.
-    inv_transform = transforms.Compose([
-        transforms.Normalize(mean=[-m / s for m, s in zip(cfg.dataset.mean, cfg.dataset.std)],
-                             std=[1 / s for s in cfg.dataset.std]),
-        transforms.ToPILImage(),
-    ])
+    inv_transform = transforms.Compose(
+        [
+            transforms.Normalize(
+                mean=[-m / s for m, s in zip(cfg.dataset.mean, cfg.dataset.std)], std=[1 / s for s in cfg.dataset.std]
+            ),
+            transforms.ToPILImage(),
+        ]
+    )
 
     # Visualize examples for struggling classes.
-    fig, axes = plt.subplots(len(struggling_classes), 5, figsize=(15, len(struggling_classes) * 4)) 
+    fig, axes = plt.subplots(len(struggling_classes), 5, figsize=(15, len(struggling_classes) * 4))
     for i, cls in enumerate(struggling_classes):
-        cls_images = [(img, lbl, pred) for img, lbl, pred in zip(all_images, all_labels, all_preds) if lbl == cls and lbl != pred]
+        cls_images = [
+            (img, lbl, pred) for img, lbl, pred in zip(all_images, all_labels, all_preds) if lbl == cls and lbl != pred
+        ]
         for j, (img, lbl, pred) in enumerate(cls_images[:5]):
             ax = axes[i, j] if len(struggling_classes) > 1 else axes[j]
-            img = inv_transform(img) 
+            img = inv_transform(img)
             ax.imshow(img)
-            ax.axis('off')
+            ax.axis("off")
             ax.set_title(f"True: {lbl}, Pred: {pred}")
     plt.tight_layout()
     plt.savefig("visualizations/struggling_classes.png")
     logger.info("Saved visualization to 'visualizations/struggling_classes.png'.")
 
+
 @app.command()
 def main():
     visualize()
+
 
 if __name__ == "__main__":
     typer.run(main)

@@ -7,19 +7,23 @@ from dotenv import load_dotenv
 from kaggle.api.kaggle_api_extended import KaggleApi
 from src.mlops_project.data import PlantVillageDataset, get_dataloaders
 from omegaconf import OmegaConf
+
 load_dotenv()
 
 # Define test configuration for Hydra
-TEST_CONFIG = OmegaConf.create({
-    "dataset": {
-        "dataset_dir": "./test_dataset_dir",
-        "raw_dir": "./test_dataset_dir/raw",
-        "dataset_name": "mohitsingh1804/plantvillage",
-    },
-    "train_split": 0.7,
-    "val_split": 0.2,
-    "batch_size": 16,
-})
+TEST_CONFIG = OmegaConf.create(
+    {
+        "dataset": {
+            "dataset_dir": "./test_dataset_dir",
+            "raw_dir": "./test_dataset_dir/raw",
+            "dataset_name": "mohitsingh1804/plantvillage",
+        },
+        "train_split": 0.7,
+        "val_split": 0.2,
+        "batch_size": 16,
+    }
+)
+
 
 @pytest.fixture(scope="module")
 def test_dataset_dir():
@@ -29,9 +33,12 @@ def test_dataset_dir():
     if os.path.exists(TEST_CONFIG.dataset.dataset_dir):
         shutil.rmtree(TEST_CONFIG.dataset.dataset_dir)
 
+
 @pytest.mark.filterwarnings("ignore::DeprecationWarning")
-@pytest.mark.skipif(not os.getenv("KAGGLE_USERNAME") or not os.getenv("KAGGLE_KEY"),
-                    reason="Kaggle credentials are not set in the environment.")
+@pytest.mark.skipif(
+    not os.getenv("KAGGLE_USERNAME") or not os.getenv("KAGGLE_KEY"),
+    reason="Kaggle credentials are not set in the environment.",
+)
 def test_download_and_count_images():
     """Test downloading the PlantVillage dataset and counting images."""
     dataset_name = TEST_CONFIG.dataset.dataset_name
@@ -57,6 +64,7 @@ def test_download_and_count_images():
     assert image_count > 0, "Dataset should contain images."
     print(f"Total number of images in the dataset: {image_count}")
 
+
 def test_dataloaders():
     """Test the get_dataloaders function."""
     train_loader, val_loader, test_loader = get_dataloaders(TEST_CONFIG)
@@ -67,6 +75,7 @@ def test_dataloaders():
         for img, label in loader:
             assert img.shape[1:] == (3, 224, 224), "Image tensor shape is incorrect."
             assert label.dtype == torch.int64, "Label tensor should have dtype torch.int64."
+
 
 def test_invalid_dataset():
     """Test handling of invalid datasets."""

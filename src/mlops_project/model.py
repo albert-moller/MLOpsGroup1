@@ -7,12 +7,13 @@ from torch import nn
 from typing import Tuple
 from omegaconf import DictConfig, OmegaConf
 
-logger = logging.getLogger('Model')
+logger = logging.getLogger("Model")
 logger.setLevel(logging.INFO)
+
 
 class MobileNetV3(pl.LightningModule):
     """Implementation of the MobileNetV3 model using a pre-trained model from the TIMM framework."""
-    
+
     def __init__(self, cfg: DictConfig) -> None:
         """
         Initializes the MobileNetV3 Model.
@@ -35,46 +36,46 @@ class MobileNetV3(pl.LightningModule):
         model = timm.create_model(
             model_name=self.model_cfg.model_name,
             pretrained=self.model_cfg.pretrained,
-            num_classes=self.model_cfg.num_classes
+            num_classes=self.model_cfg.num_classes,
         )
         return model
 
     def prepare_model_for_finetuning(self) -> None:
         """
-        Freezes all layers except the output classification layer. 
+        Freezes all layers except the output classification layer.
         Replaces the classification layer of the pre-trained
         model such that it accounts for the correct number
         of classes.
         """
         num_classes = self.cfg.model.num_classes
-        # Freeze all layers. 
+        # Freeze all layers.
         for param in self.model.parameters():
             param.requires_grad = False
         # Replace the output classification layer.
-        if hasattr(self.model, 'fc'):
+        if hasattr(self.model, "fc"):
             self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
             # Unfreeze the linear output layer.
             for param in self.model.fc.parameters():
                 param.requires_grad = True
-        elif hasattr(self.model, 'classifier'):
+        elif hasattr(self.model, "classifier"):
             self.model.classifier = nn.Linear(self.model.classifier.in_features, num_classes)
             # Unfreeze the classification layer.
             for param in self.model.classifier.parameters():
                 param.requires_grad = True
         else:
             raise ValueError(f"The selected model {self.model_name} does not have a linear classification layer.")
-    
+
     @staticmethod
     def compute_accuracy(pred: torch.Tensor, target: torch.Tensor) -> float:
         accuracy = (pred.argmax(dim=1) == target).float().mean().item()
         return accuracy
-        
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        Forward pass.      
+        Forward pass.
         """
         return self.model(x)
-    
+
     def training_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> torch.Tensor:
         # Unpack images and labels.
         img, label = batch
@@ -85,10 +86,10 @@ class MobileNetV3(pl.LightningModule):
         # Compute training accuracy.
         accuracy = MobileNetV3.compute_accuracy(y_pred, label)
         # Log train metrics.
-        self.log('train_loss', loss)
-        self.log('train_accuracy', accuracy)
+        self.log("train_loss", loss)
+        self.log("train_accuracy", accuracy)
         return loss
-    
+
     def validation_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
         # Unpack images and labels.
         img, label = batch
@@ -99,9 +100,9 @@ class MobileNetV3(pl.LightningModule):
         # Compute training accuracy.
         accuracy = MobileNetV3.compute_accuracy(y_pred, label)
         # Log validation metrics.
-        self.log('val_loss', loss, on_epoch=True)
-        self.log('val_accuracy', accuracy, on_epoch=True)
-    
+        self.log("val_loss", loss, on_epoch=True)
+        self.log("val_accuracy", accuracy, on_epoch=True)
+
     def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
         # Unpack images and labels.
         img, label = batch
@@ -112,15 +113,16 @@ class MobileNetV3(pl.LightningModule):
         # Compute training accuracy.
         accuracy = MobileNetV3.compute_accuracy(y_pred, label)
         # Log test metrics.
-        self.log('test_loss', loss)
-        self.log('test_accuracy', accuracy)
+        self.log("test_loss", loss)
+        self.log("test_accuracy", accuracy)
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
         # Create optimizer dynamically based on optimizer config.
         optimizer_class = getattr(torch.optim, self.optimizer_cfg.optimizer.type)
         optimizer = optimizer_class(self.parameters(), **self.optimizer_cfg.optimizer.params)
         return optimizer
-    
+
+
 @hydra.main(config_path="../../configs", config_name="config", version_base=None)
 def main(cfg: DictConfig) -> None:
     # Display the config object.
@@ -138,7 +140,6 @@ def main(cfg: DictConfig) -> None:
     output = model(dummy_input)
     logger.info(f"Output shape: {output.shape}")
 
+
 if __name__ == "__main__":
     main()
-
-    

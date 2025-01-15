@@ -2,11 +2,10 @@ import os
 import pytest
 import torch
 import shutil
-import warnings
 from pathlib import Path
 from dotenv import load_dotenv
 from kaggle.api.kaggle_api_extended import KaggleApi
-from src.mlops_project.data import PlantVillageDataset, get_transforms, get_dataloaders
+from src.mlops_project.data import PlantVillageDataset, get_dataloaders
 from omegaconf import OmegaConf
 load_dotenv()
 

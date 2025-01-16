@@ -20,8 +20,7 @@ COPY pyproject.toml pyproject.toml
 COPY README.md README.md
 
 # Install Python dependencies with caching
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r requirements.txt && \
+RUN pip install --cache-dir=/root/.cache/pip -r requirements.txt && \
     pip install -e .
 
 # Copy project files

@@ -1,0 +1,19 @@
+# Ignore unnecessary files
+data/
+models/
+*.log
+*.tmp
+*.cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Include required files
+!.gitignore
+!requirements.txt
+!requirements_dev.txt
+!pyproject.toml
+!README.md
+!dockerfiles/
+!configs/
+!src/

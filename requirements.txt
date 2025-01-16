@@ -9,6 +9,7 @@ onnx==1.17.0
 onnxruntime==1.19.2
 onnxscript==0.1.0.dev20250114
 pytorch-lightning==2.5.0.post0
+python-multipart==0.0.20
 pytest==8.3.4
 python-dotenv==1.0.1
 scikit-learn==1.6.1

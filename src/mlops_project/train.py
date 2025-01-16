@@ -19,7 +19,6 @@ logger.debug(f"Using device: {DEVICE}")
 # Create a Typer app.
 app = typer.Typer()
 
-
 @hydra.main(version_base=None, config_path=f"{os.path.dirname(__file__)}/../../configs", config_name="config")
 def train(cfg: DictConfig) -> None:
     cfg: MainConfig = OmegaConf.structured(cfg)
@@ -65,13 +64,25 @@ def train(cfg: DictConfig) -> None:
     trainer.test(model, test_loader)
     # Save model
     torch.save(model.state_dict(), "models/mobilenetv3_model.pth")
+    # Export model to ONNX.
+    dummy_input = torch.randn(1, 3, 224, 224)
+    model.to_onnx(
+        file_path="models/mobilenetv3_model.onnx",
+        input_sample=dummy_input,
+        input_names=["input"],
+        output_names=["output"],
+        dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}}
+    )
+    # Create model artifact instance.
     artifact = wandb.Artifact(
         "mobilenetv3_model",
         type="model",
         description="A fine-tuned MobileNetV3 model for plant disease classification",
         metadata={"num_epochs": cfg.num_epochs, "batch_size": cfg.batch_size},
     )
-    artifact.add_file("mobilenetv3_model.pth")
+    # Log model files to WandB
+    artifact.add_file("models/mobilenetv3_model.pth")
+    artifact.add_file("models/mobilenetv3_model.onnx")
     wandb.run.log_artifact(artifact)
     logger.info("Model artifact logged to Wandb.")
 

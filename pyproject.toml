@@ -25,6 +25,7 @@ data = "mlops_project.data:main"
 evaluate = "mlops_project.evaluate:main"
 visualize = "mlops_project.visualize:main"
 api = "mlops_project.api:main"
+api_onnx = "mlops_project.api_onnx:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

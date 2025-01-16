@@ -13,7 +13,7 @@ outputs/
 lightning_logs/
 wandb/
 models/
-mobilenetv3_model.pth
+visualizations/
 
 # Ignore build files
 build/

@@ -64,7 +64,7 @@ def train(cfg: DictConfig) -> None:
     # Test model
     trainer.test(model, test_loader)
     # Save model
-    torch.save(model.state_dict(), "mobilenetv3_model.pth")
+    torch.save(model.state_dict(), "models/mobilenetv3_model.pth")
     artifact = wandb.Artifact(
         "mobilenetv3_model",
         type="model",

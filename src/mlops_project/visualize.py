@@ -24,7 +24,7 @@ def visualize(cfg: DictConfig) -> None:
 
     # Load the trained model.
     model = MobileNetV3(cfg).to(DEVICE)
-    model_path = "mobilenetv3_model.pth"
+    model_path = "models/mobilenetv3_model.pth"
     if not os.path.exists(model_path):
         logger.info(f"Model file '{model_path}' not found. Please ensure the model is trained and saved.")
         return

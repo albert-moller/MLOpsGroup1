@@ -24,6 +24,7 @@ train = "mlops_project.train:main"
 data = "mlops_project.data:main"
 evaluate = "mlops_project.evaluate:main"
 visualize = "mlops_project.visualize:main"
+api = "mlops_project.api:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

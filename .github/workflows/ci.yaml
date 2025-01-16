@@ -68,8 +68,14 @@ jobs:
         pip install -r requirements.txt -v
         pip install -r requirements_dev.txt -v
 
-    - name: Run tests
+    - name: Run unittests
       env:
         PYTHONPATH: ${{ github.workspace }}/src
       run: |
-        pytest tests/ --maxfail=5 --disable-warnings -v
+        pytest tests/unittests --maxfail=5 --disable-warnings -v
+
+    - name: Run integrationtests
+      env: 
+        PYTHONPATH: ${{ github.workspace }}/src
+      run: |
+        pytest tests/integrationtests --maxfail=5 --disable-warnings -v

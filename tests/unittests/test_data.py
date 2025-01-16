@@ -2,7 +2,7 @@ import os
 import pytest
 import torch
 from pathlib import Path
-from src.mlops_project.data import PlantVillageDataset, get_transforms
+from mlops_project.data import PlantVillageDataset, get_transforms
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -10,6 +10,7 @@ load_dotenv()
 
 # Define the sample dataset path
 SAMPLE_DATASET_DIR = "./tests/sample"
+
 
 def test_sample_dataset_loading():
     """Test loading and verifying the small dataset in tests/data/sample."""
@@ -34,12 +35,13 @@ def test_sample_dataset_loading():
         # Ensure the label is within range
         assert 0 <= label < len(dataset.class_to_idx), f"Label out of range: {label}."
 
+
 def test_invalid_dataset():
     """Test handling of invalid datasets."""
     invalid_dataset_dir = "./tests/data/invalid"
     # Ensure the invalid directory does not exist
     assert not os.path.exists(invalid_dataset_dir), "Invalid dataset directory should not exist."
-    
+
     # Attempt to load the invalid dataset and expect a FileNotFoundError
     with pytest.raises(FileNotFoundError):
         PlantVillageDataset(raw_data_path=Path(invalid_dataset_dir))

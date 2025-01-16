@@ -108,7 +108,7 @@ started with Machine Learning Operations (MLOps).
 - [ ] Albert Get your model training in GCP using either the Engine or Vertex AI (M21)
 - [x] Albert: Create a FastAPI application that can do inference using your model (M22)
 - [ ] Cathialina Deploy your model in GCP using either Functions or Run as the backend (M23)
-- [ ] Albert Write API tests for your application and set up continuous integration for these (M24)
+- [x] Albert Write API tests for your application and set up continuous integration for these (M24)
 - [ ] Mark Load test your application (M24)
 - [ ] Albert Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
 - [ ] Mark Create a frontend for your API (M26)

@@ -28,7 +28,7 @@ def visualize(cfg: DictConfig) -> None:
     if not os.path.exists(model_path):
         logger.info(f"Model file '{model_path}' not found. Please ensure the model is trained and saved.")
         return
-    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+    model.load_state_dict(torch.load(model_path, map_location=DEVICE, weights_only=True))
     model.eval()
     logger.info(f"Loaded model from '{model_path}'.")
 

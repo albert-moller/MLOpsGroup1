@@ -8,18 +8,18 @@ from hydra import initialize, compose
 
 from mlops_project.model import MobileNetV3
 
+# Load Hydra configuration.
+with initialize(version_base=None, config_path="../../configs", job_name="test_model"):
+    cfg = compose(config_name="config")
+
 
 def test_model_initialization():
-    with initialize(version_base=None, config_path="../configs", job_name="test_app"):
-        cfg = compose(config_name="config")
     model = MobileNetV3(cfg)
     assert isinstance(model, torch.nn.Module)
     assert hasattr(model, "forward")
 
 
 def test_model_forward_pass_batch():
-    with initialize(version_base=None, config_path="../configs", job_name="test_app"):
-        cfg = compose(config_name="config")
     model = MobileNetV3(cfg)
     x = torch.randn(8, 3, 224, 224)  # Batch of 8 images
     y = model(x)
@@ -27,8 +27,6 @@ def test_model_forward_pass_batch():
 
 
 def test_model_invalid_input():
-    with initialize(version_base=None, config_path="../configs", job_name="test_app"):
-        cfg = compose(config_name="config")
     model = MobileNetV3(cfg)
     x = torch.randn(1, 1, 224, 224)
     with pytest.raises(RuntimeError, match="expected input\\[1, 1, 224, 224\\] to have 3 channels"):
@@ -36,8 +34,6 @@ def test_model_invalid_input():
 
 
 def test_training_step():
-    with initialize(version_base=None, config_path="../configs", job_name="test_app"):
-        cfg = compose(config_name="config")
     model = MobileNetV3(cfg)
     # Prepare the model for fine-tuning.
     model.prepare_model_for_finetuning()
@@ -67,8 +63,6 @@ def test_training_step():
 
 
 def test_model_saving_loading():
-    with initialize(version_base=None, config_path="../configs", job_name="test_app"):
-        cfg = compose(config_name="config")
     # Intialize the model.
     model = MobileNetV3(cfg)
     # Prepare model for fine-tuning.

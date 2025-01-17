@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from PIL import Image
 from torchvision import transforms
 
+
 # Define the lifespan context
 @asynccontextmanager
 async def lifespan(app: FastAPI):

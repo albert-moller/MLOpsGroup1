@@ -19,6 +19,7 @@ logger.debug(f"Using device: {DEVICE}")
 # Create a Typer app.
 app = typer.Typer()
 
+
 @hydra.main(version_base=None, config_path=f"{os.path.dirname(__file__)}/../../configs", config_name="config")
 def train(cfg: DictConfig) -> None:
     cfg: MainConfig = OmegaConf.structured(cfg)
@@ -71,7 +72,7 @@ def train(cfg: DictConfig) -> None:
         input_sample=dummy_input,
         input_names=["input"],
         output_names=["output"],
-        dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}}
+        dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
     )
     # Create model artifact instance.
     artifact = wandb.Artifact(

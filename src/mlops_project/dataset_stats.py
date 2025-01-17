@@ -1,11 +1,11 @@
-import torch
 import numpy as np
 import typer
 from hydra import initialize, compose
-from mlops_project.data import PlantVillageDataset, get_dataloaders
+from mlops_project.data import get_dataloaders
 
 # Create a Typer app
 app = typer.Typer()
+
 
 def main():
     # Load Hydra configuration.
@@ -20,7 +20,7 @@ def main():
         labels = [label for _, label in dataset]
         unique_labels, counts = np.unique(labels, return_counts=True)
         class_distribution = dict(zip(unique_labels, counts))
-        #Find most and least frequent classes
+        # Find most and least frequent classes
         most_frequent = max(class_distribution.items(), key=lambda x: x[1])
         least_frequent = min(class_distribution.items(), key=lambda x: x[1])
         # Print dataset statistics.
@@ -30,7 +30,6 @@ def main():
         print(f"Most frequent class: {most_frequent[0]} ({most_frequent[1]} samples)")
         print(f"Least frequent class: {least_frequent[0]} ({least_frequent[1]} samples)\n")
 
+
 if __name__ == "__main__":
     typer.run(main)
-
-

@@ -1,0 +1,10 @@
+Name                                          Stmts   Miss  Cover   Missing
+---------------------------------------------------------------------------
+src/mlops_project/__init__.py                     0      0   100%
+src/mlops_project/api.py                         38      2    95%   22, 75
+src/mlops_project/api_onnx.py                    29      1    97%   60
+src/mlops_project/data.py                        67     17    75%   89-110, 116-120, 124
+src/mlops_project/model.py                       80     38    52%   56-59, 66, 70-71, 81-91, 95-104, 108-117, 121-123, 129-141, 145
+src/mlops_project/utils/download_dataset.py      48     35    27%   20-69, 74, 78
+---------------------------------------------------------------------------
+TOTAL                                           262     93    65%

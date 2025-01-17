@@ -5,7 +5,7 @@ steps:
     'build',
     '.',
     '-t',
-    'europe-west1-docker.pkg.dev/$PROJECT_ID/mlops-docker-repo/train',
+    'europe-west4-docker.pkg.dev/$PROJECT_ID/mlops-docker-repo/train',
     '-f',
     'dockerfiles/train.dockerfile'
   ]

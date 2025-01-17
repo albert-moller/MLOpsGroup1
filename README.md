@@ -96,11 +96,11 @@ started with Machine Learning Operations (MLOps).
 
 - [x] Mark: Write unit tests related to the data part of your code (M16)
 - [x] Albert: Write unit tests related to model construction and/or model training (M16)
-- [ ] Cathialina Calculate the code coverage (M16)
+- [x] Cathialina Calculate the code coverage (M16)
 - [x] Mark Get some continuous integration running on the GitHub repository (M17)
 - [x] Mark Add caching and multi-OS/Python/PyTorch testing to your continuous integration (M17)
 - [x] Albert: Add a linting step to your continuous integration (M17)
-- [ ] Cathialina Add pre-commit hooks to your version control setup (M18)
+- [x] Cathialina Add pre-commit hooks to your version control setup (M18)
 - [x] Albert Add a continuous workflow that triggers when data changes (M19)
 - [ ] Cathialina Add a continuous workflow that triggers when changes to the model registry are made (M19)
 - [x] Mark Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)

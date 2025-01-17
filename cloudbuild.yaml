@@ -14,7 +14,7 @@ steps:
   id: 'Push container image'
   args: [
     'push',
-    'europe-west1-docker.pkg.dev/$PROJECT_ID/mlops-docker-repo/train'
+    'europe-west4-docker.pkg.dev/$PROJECT_ID/mlops-docker-repo/train'
   ]
 
 options:

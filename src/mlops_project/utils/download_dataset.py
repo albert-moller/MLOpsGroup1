@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 logger = logging.Logger("Data")
 logger.setLevel(logging.INFO)
 
+# Load environment variables
+load_dotenv()
 
 def authenticate_kaggle() -> None:
     """Authenticates with the Kaggle API using environment variables."""
@@ -33,8 +35,6 @@ def download_dataset(cfg: DictConfig) -> None:
         cfg (DictConfig): Hydra configuration object with dataset parameters.
     """
     cfg = cfg.dataset
-    # Load environment variables
-    load_dotenv()
     api = authenticate_kaggle()
 
     # Set dataset paths.

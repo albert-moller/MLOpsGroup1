@@ -116,3 +116,16 @@ def test_compute_accuracy():
     targets = torch.tensor([1, 0, 1])
     accuracy = MobileNetV3.compute_accuracy(preds, targets)
     assert accuracy == pytest.approx(2 / 3, 0.01)
+
+def test_configure_optimizers():
+    model = MobileNetV3(cfg)
+    optimizer = model.configure_optimizers()
+    assert isinstance(optimizer, torch.optim.Optimizer)
+    assert optimizer.defaults["lr"] == cfg.optimizer.optimizer.params.lr
+
+def test_load_model():
+    model = MobileNetV3(cfg)
+    loaded_model = model.load_model()
+    assert isinstance(loaded_model, torch.nn.Module)
+    assert loaded_model.num_classes == cfg.model.num_classes
+    assert loaded_model.default_cfg["input_size"] == (3, 224, 224)

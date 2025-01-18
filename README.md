@@ -2,7 +2,7 @@
  
 ## Project Description
  
-#### Goal
+#### Goal 
 This is the project description for the 02476 Machine Learning Operations course at DTU. The aim of this project is to apply course material, methods and tools to a machine learning problem, specifically detecting plant diseases through image classification. By being able to identify plant diseases, farmers will be able to promptly remove the diseased plants thus reducing their crop losses, while significantly boosting their agricultural productivity and efficiency. The project will leverage pre-trained models and advanced frameworks to achieve accurate predictions. Findings will be presented and submitted alongside the written code.
 
 #### Framework

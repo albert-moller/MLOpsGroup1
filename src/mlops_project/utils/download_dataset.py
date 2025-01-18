@@ -10,6 +10,21 @@ logger = logging.Logger("Data")
 logger.setLevel(logging.INFO)
 
 
+def authenticate_kaggle() -> None:
+    """Authenticates with the Kaggle API using environment variables."""
+    kaggle_username = os.getenv("KAGGLE_USERNAME")
+    kaggle_key = os.getenv("KAGGLE_KEY")
+    if not kaggle_username or not kaggle_key:
+        raise ValueError("Kaggle API credentials not found in .env file")
+    os.environ["KAGGLE_USERNAME"] = kaggle_username
+    os.environ["KAGGLE_KEY"] = kaggle_key
+    from kaggle.api.kaggle_api_extended import KaggleApi
+
+    api = KaggleApi()
+    api.authenticate()
+    return api
+
+
 def download_dataset(cfg: DictConfig) -> None:
     """
     Downloads and organizes a dataset from Kaggle
@@ -20,19 +35,7 @@ def download_dataset(cfg: DictConfig) -> None:
     cfg = cfg.dataset
     # Load environment variables
     load_dotenv()
-    kaggle_username = os.getenv("KAGGLE_USERNAME")
-    kaggle_key = os.getenv("KAGGLE_KEY")
-
-    if not kaggle_username or not kaggle_key:
-        raise ValueError("Kaggle API credentials not found in .env file")
-
-    os.environ["KAGGLE_USERNAME"] = kaggle_username
-    os.environ["KAGGLE_KEY"] = kaggle_key
-    # Authenticate the Kaggle API.
-    from kaggle.api.kaggle_api_extended import KaggleApi
-
-    api = KaggleApi()
-    api.authenticate()
+    api = authenticate_kaggle()
 
     # Set dataset paths.
     dataset_path = os.path.join(cfg.dataset_dir, "PlantVillage")

@@ -63,10 +63,16 @@ class MobileNetV3(pl.LightningModule):
             for param in self.model.classifier.parameters():
                 param.requires_grad = True
         else:
-            raise ValueError(f"The selected model {self.model_name} does not have a linear classification layer.")
+            raise ValueError(
+                f"The selected model {self.model_cfg.model_name} does not have a linear classification layer."
+            )
 
     @staticmethod
     def compute_accuracy(pred: torch.Tensor, target: torch.Tensor) -> float:
+        if pred.size(0) == 0 or target.size(0) == 0:
+            raise ValueError("Predictions and targets must not be empty.")
+        if pred.size(0) != target.size(0):
+            raise ValueError("Predictions and targets must have the same batch size.")
         accuracy = (pred.argmax(dim=1) == target).float().mean().item()
         return accuracy
 

@@ -59,3 +59,8 @@ def test_predict_corrupted_image(test_client):
     assert response.status_code == 500
     json_response = response.json()
     assert "error" in json_response
+
+
+def test_invalid_endpoint(test_client):
+    response = test_client.get("/nonexistent_endpoint/")
+    assert response.status_code == 404

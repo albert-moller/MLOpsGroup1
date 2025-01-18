@@ -1,8 +1,11 @@
 import os
 import pytest
 import torch
+from omegaconf import OmegaConf
 from pathlib import Path
+from unittest.mock import patch, MagicMock
 from mlops_project.data import PlantVillageDataset, get_transforms
+from mlops_project.utils.download_dataset import download_dataset, authenticate_kaggle
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -10,6 +13,39 @@ load_dotenv()
 
 # Define the sample dataset path
 SAMPLE_DATASET_DIR = "./tests/sample"
+
+
+def test_missing_env_vars():
+    with patch.dict(os.environ, {"KAGGLE_USERNAME": "", "KAGGLE_KEY": ""}):
+        with pytest.raises(ValueError, match="Kaggle API credentials not found in .env file"):
+            authenticate_kaggle()
+
+
+@patch("kaggle.api.kaggle_api_extended.KaggleApi")
+def test_download_dataset(mock_kaggle_api, tmp_path):
+    # Convert the configuration dictionary to a DictConfig
+    cfg = OmegaConf.create(
+        {
+            "dataset": {
+                "dataset_dir": str(tmp_path / "dataset"),
+                "raw_dir": str(tmp_path / "raw"),
+                "dataset_name": "plant-village-dataset",
+            }
+        }
+    )
+
+    mock_api = MagicMock()
+    mock_kaggle_api.return_value = mock_api
+
+    # Mock environment variables
+    with patch.dict(os.environ, {"KAGGLE_USERNAME": "user", "KAGGLE_KEY": "key"}):
+        download_dataset(cfg)
+
+    mock_api.authenticate.assert_called_once()
+    mock_api.dataset_download_files.assert_called_with(
+        cfg.dataset.dataset_name, path=cfg.dataset.dataset_dir, unzip=True
+    )
+    assert os.path.exists(cfg.dataset.raw_dir)
 
 
 def test_sample_dataset_loading():

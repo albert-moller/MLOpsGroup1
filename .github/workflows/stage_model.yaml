@@ -46,10 +46,6 @@ jobs:
         pip install -r requirements.txt -v
         pip install -r requirements_dev.txt -v
 
-    - name: Pull data
-      run: |
-        dvc pull --no-run-cache
-
     - name: Test model
       run: |
         pytest tests/performancetests/test_model.py

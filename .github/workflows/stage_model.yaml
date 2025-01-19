@@ -18,7 +18,7 @@ jobs:
       - name: Setting model environment variable and output
         id: set_output
         run: |
-          echo "model_name=${{ github.event.client_payload.artifact_name }}:${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+          echo "model_name=${{ github.event.client_payload.artifact_version_string }}" >> $GITHUB_OUTPUT
 
   test_model:
     runs-on: ubuntu-latest

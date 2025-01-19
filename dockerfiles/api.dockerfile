@@ -27,10 +27,10 @@ RUN pip install --upgrade pip && \
 ENV PYTHONPATH="/app/src"
 
 # Expose the port the app runs on
-EXPOSE 8000
+EXPOSE 8080
 
 # Define the entrypoint to run the FastAPI app with Uvicorn
-ENTRYPOINT ["uvicorn", "mlops_project.api:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["uvicorn", "mlops_project.api:app", "--host", "0.0.0.0", "--port", "8080"]
 
 
 

@@ -2,7 +2,7 @@ import wandb
 import os
 import time
 import torch
-from mlops_project.model import MobileNetV3  # Corrected import
+from src.mlops_project.model import MobileNetV3  # Corrected import
 from dotenv import load_dotenv
 from omegaconf import OmegaConf
 

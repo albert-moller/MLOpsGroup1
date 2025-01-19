@@ -46,6 +46,11 @@ jobs:
         pip install -r requirements.txt -v
         pip install -r requirements_dev.txt -v
 
+    - name: Add src to PYTHONPATH
+      run: |
+        echo "PYTHONPATH=$PYTHONPATH:$(pwd)/src" >> $GITHUB_ENV
+        echo "Updated PYTHONPATH: $PYTHONPATH"
+
     - name: Test model
       run: |
         pytest tests/performancetests/test_model.py
